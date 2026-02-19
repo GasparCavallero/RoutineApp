@@ -41,10 +41,15 @@ export async function getProgressByExercise(exerciseId: number) {
 
 	return db.getAllAsync<ProgressPoint>(
 		`
-			SELECT date, weight
-			FROM history
-			WHERE exercise_id = ?
-			ORDER BY date ASC;
+			SELECT h.date, h.weight
+			FROM history h
+			INNER JOIN exercises e ON e.id = h.exercise_id
+			WHERE LOWER(TRIM(e.name)) = (
+				SELECT LOWER(TRIM(name))
+				FROM exercises
+				WHERE id = ?
+			)
+			ORDER BY h.date ASC;
 		`,
 		exerciseId,
 	);

@@ -18,10 +18,28 @@ type ExerciseSnapshot = {
 	sets: string;
 };
 
+function normalizeExerciseName(name: string) {
+	return name.trim().replace(/\s+/g, ' ');
+}
+
 export async function getExercisesByRoutine(routineId: number) {
 	const db = await getDb();
 	return db.getAllAsync<ExerciseRow>(
-		'SELECT id, routine_id, name, weight, record, sets, "order" FROM exercises WHERE routine_id = ? ORDER BY "order" ASC, id ASC;',
+		`SELECT
+				e.id,
+				e.routine_id,
+				e.name,
+				e.weight,
+				(
+					SELECT MAX(CASE WHEN e2.record > e2.weight THEN e2.record ELSE e2.weight END)
+					FROM exercises e2
+					WHERE LOWER(TRIM(e2.name)) = LOWER(TRIM(e.name))
+				) AS record,
+				e.sets,
+				e."order"
+			FROM exercises e
+			WHERE e.routine_id = ?
+			ORDER BY e."order" ASC, e.id ASC;`,
 		routineId,
 	);
 }
@@ -29,7 +47,20 @@ export async function getExercisesByRoutine(routineId: number) {
 export async function getAllExercises() {
 	const db = await getDb();
 	return db.getAllAsync<ExerciseRow>(
-		'SELECT id, routine_id, name, weight, record, sets, "order" FROM exercises ORDER BY name ASC;',
+		`SELECT
+				e.id,
+				e.routine_id,
+				e.name,
+				e.weight,
+				(
+					SELECT MAX(CASE WHEN e2.record > e2.weight THEN e2.record ELSE e2.weight END)
+					FROM exercises e2
+					WHERE LOWER(TRIM(e2.name)) = LOWER(TRIM(e.name))
+				) AS record,
+				e.sets,
+				e."order"
+			FROM exercises e
+			ORDER BY e.name ASC;`,
 	);
 }
 
@@ -39,6 +70,12 @@ export async function createExercise(
 	options?: { sets?: string; weight?: number },
 ) {
 	const db = await getDb();
+	const normalizedName = normalizeExerciseName(name);
+
+	if (!normalizedName) {
+		return null;
+	}
+
 	const result = await db.getFirstAsync<{ maxOrder: number | null }>(
 		'SELECT MAX("order") as maxOrder FROM exercises WHERE routine_id = ?;',
 		routineId,
@@ -51,7 +88,7 @@ export async function createExercise(
 	const insert = await db.runAsync(
 		'INSERT INTO exercises (routine_id, name, weight, record, sets, "order") VALUES (?, ?, ?, ?, ?, ?);',
 		routineId,
-		name,
+		normalizedName,
 		initialWeight,
 		initialWeight,
 		initialSets,
@@ -89,12 +126,17 @@ export async function updateExercise(
 	const nextWeight = patch.weight ?? current.weight;
 	const nextSets = patch.sets ?? current.sets;
 	const nextName = patch.name;
+	const normalizedName = typeof nextName === 'string' ? normalizeExerciseName(nextName) : undefined;
 	const nextRecord = Math.max(current.record, nextWeight);
 
-	if (typeof nextName === 'string') {
+	if (typeof normalizedName === 'string') {
+		if (!normalizedName) {
+			return;
+		}
+
 		await db.runAsync(
 			'UPDATE exercises SET name = ?, weight = ?, sets = ?, record = ? WHERE id = ?;',
-			nextName,
+			normalizedName,
 			nextWeight,
 			nextSets,
 			nextRecord,

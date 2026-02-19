@@ -2,6 +2,10 @@ import * as SQLite from 'expo-sqlite';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
+function normalizeExerciseName(name: string) {
+	return name.trim().replace(/\s+/g, ' ');
+}
+
 export async function getDb() {
 	if (!dbPromise) {
 		dbPromise = SQLite.openDatabaseAsync('routineapp.db');
@@ -43,4 +47,16 @@ export async function initDatabase() {
 			FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 		);
 	`);
+
+	const existingExercises = await db.getAllAsync<{ id: number; name: string }>('SELECT id, name FROM exercises;');
+
+	for (const exercise of existingExercises) {
+		const normalizedName = normalizeExerciseName(exercise.name);
+
+		if (!normalizedName || normalizedName === exercise.name) {
+			continue;
+		}
+
+		await db.runAsync('UPDATE exercises SET name = ? WHERE id = ?;', normalizedName, exercise.id);
+	}
 }

@@ -20,10 +20,21 @@ export function ProgressScreen() {
 		useCallback(() => {
 			const refresh = async () => {
 				const list = await loadAllExercises();
-				setExerciseList(list.map((item) => ({ id: item.id, name: item.name })));
+				const seenNames = new Set<string>();
+				const uniqueExercises = list.filter((item) => {
+					const normalizedName = item.name.trim().toLowerCase();
+					if (seenNames.has(normalizedName)) {
+						return false;
+					}
 
-				if (!selectedExerciseId && list.length) {
-					const firstId = list[0].id;
+					seenNames.add(normalizedName);
+					return true;
+				});
+
+				setExerciseList(uniqueExercises.map((item) => ({ id: item.id, name: item.name })));
+
+				if (!selectedExerciseId && uniqueExercises.length) {
+					const firstId = uniqueExercises[0].id;
 					setSelectedExerciseId(firstId);
 					await loadProgress(firstId);
 				}
