@@ -58,19 +58,19 @@ export function RoutineScreen() {
 				</Pressable>
 			),
 			headerRight: () => (
-				<View style={{ flexDirection: 'row', gap: 12, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
-					<Pressable 
-						onPress={() => setEditMode((prev) => !prev)}
-						style={({ pressed }) => ({
-							width: 32,
-							height: 32,
-							borderRadius: 8,
-							borderWidth: 1,
-							borderColor: theme.border,
-							backgroundColor: pressed ? theme.border : 'transparent',
-							alignItems: 'center',
-							justifyContent: 'center',
-						})}
+			<View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
+				<Pressable 
+					onPress={() => setEditMode((prev) => !prev)}
+					style={({ pressed }) => ({
+						width: 32,
+						height: 32,
+						borderRadius: 6,
+						borderWidth: 1,
+						borderColor: theme.border,
+						backgroundColor: pressed ? theme.border : 'transparent',
+						alignItems: 'center',
+						justifyContent: 'center',
+					})}
 					>
 						{editMode ? (
 							<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
@@ -83,7 +83,7 @@ export function RoutineScreen() {
 						style={({ pressed }) => ({
 							width: 32,
 							height: 32,
-							borderRadius: 8,
+							borderRadius: 6,
 							borderWidth: 1,
 							borderColor: theme.border,
 							backgroundColor: pressed ? theme.border : 'transparent',

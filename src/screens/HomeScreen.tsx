@@ -87,7 +87,7 @@ export function HomeScreen() {
 		navigation.setOptions({
 			headerLeft: () => <ThemeSlider onPress={toggleTheme} mode={mode} theme={theme} />,
 			headerRight: () => (
-				<View style={{ flexDirection: 'row', gap: 12, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
+				<View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
 					<Pressable 
 						onPress={() => setEditMode((prev) => !prev)}
 						style={({ pressed }) => [
@@ -101,11 +101,11 @@ export function HomeScreen() {
 							}
 						]}
 					>
-					{editMode ? (
-						<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
-					) : (
-						<EditIcon color={theme.primary} size={20} />
-					)}
+						{editMode ? (
+							<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
+						) : (
+							<EditIcon color={theme.primary} size={20} />
+						)}
 					</Pressable>
 					<Pressable 
 						onPress={() => setShowAddModal(true)} 
@@ -244,8 +244,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	headerButton: {
-		paddingHorizontal: 12,
-		borderRadius: 8,
+		borderRadius: 6,
 		borderWidth: 1,
 		alignItems: 'center',
 		justifyContent: 'center',
