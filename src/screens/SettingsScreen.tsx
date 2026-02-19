@@ -1,4 +1,8 @@
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import { useThemeContext } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import { Button } from '../components/Button';
@@ -6,27 +10,114 @@ import { ThemeSlider } from './HomeScreen';
 
 export function SettingsScreen() {
 	const { theme, mode, toggleTheme } = useThemeContext();
-	const { routines, exercises, history } = useAppContext();
+	const { routines, exercises, getExportData, importData } = useAppContext();
+	const pickerInProgressRef = useRef(false);
+	const [isPickingDocument, setIsPickingDocument] = useState(false);
+	const [isImportingData, setIsImportingData] = useState(false);
+	const [isExportingData, setIsExportingData] = useState(false);
+	const isDataActionBusy = isPickingDocument || isImportingData || isExportingData;
 
 	const handleExportData = async () => {
-		try {
-			const data = {
-				routines,
-				exercises,
-				history,
-				exportedAt: new Date().toISOString(),
-			};
+		if (isDataActionBusy) {
+			return;
+		}
 
-			// Aquí puedes implementar la exportación real con Share o FileSystem
-			Alert.alert('Éxito', `Se exportaron ${routines.length} rutinas, ${exercises.length} ejercicios`);
+		setIsExportingData(true);
+		try {
+			const data = await getExportData();
+
+			const fileName = `routine-backup-${new Date().getTime()}.json`;
+			const exportFile = new FileSystem.File(FileSystem.Paths.cache, fileName);
+			exportFile.create({ overwrite: true, intermediates: true });
+
+			exportFile.write(JSON.stringify(data, null, 2));
+
+			if (await Sharing.isAvailableAsync()) {
+				await Sharing.shareAsync(exportFile.uri, {
+					mimeType: 'application/json',
+					dialogTitle: 'Exportar datos',
+				});
+				Alert.alert('Éxito', `Se exportaron ${routines.length} rutinas, ${exercises.length} ejercicios`);
+			} else {
+				Alert.alert('Éxito', 'Archivo exportado. Búscalo en tu gestor de descargas.');
+			}
 		} catch (error) {
 			Alert.alert('Error', 'No se pudieron exportar los datos');
+			console.error(error);
+		} finally {
+			setIsExportingData(false);
 		}
 	};
 
 	const handleImportData = async () => {
-		// Aquí puedes implementar la importación de datos
-		Alert.alert('Importar', 'Funcionalidad de importación en desarrollo');
+		if (pickerInProgressRef.current || isImportingData || isExportingData) {
+			return;
+		}
+
+		pickerInProgressRef.current = true;
+		setIsPickingDocument(true);
+
+		try {
+			const result = await DocumentPicker.getDocumentAsync({
+				type: 'application/json',
+			});
+
+			if (result.canceled || !result.assets[0]) return;
+
+			const fileUri = result.assets[0].uri;
+			const importFile = new FileSystem.File(fileUri);
+			const fileContent = await importFile.text();
+			const importedData = JSON.parse(fileContent);
+			const routinesToImport = Array.isArray(importedData.routines) ? importedData.routines : [];
+			const exercisesToImport = Array.isArray(importedData.exercises) ? importedData.exercises : [];
+			const historyToImport = Array.isArray(importedData.history) ? importedData.history : [];
+
+			if (!routinesToImport.length) {
+				Alert.alert('Error', 'Formato de archivo inválido');
+				return;
+			}
+
+			Alert.alert(
+				'Importar datos',
+				`Se importarán ${routinesToImport.length} rutinas y ${exercisesToImport.length} ejercicios.\n\n¿Deseas continuar?`,
+				[
+					{ text: 'Cancelar', style: 'cancel' },
+					{
+						text: 'Importar',
+						style: 'destructive',
+						onPress: async () => {
+							setIsImportingData(true);
+							try {
+								await importData({
+									routines: routinesToImport,
+									exercises: exercisesToImport,
+									history: historyToImport,
+								});
+								Alert.alert('Éxito', 'Los datos se importaron correctamente');
+							} catch (error) {
+								Alert.alert('Error', 'No se pudieron importar los datos');
+								console.error(error);
+							} finally {
+								setIsImportingData(false);
+							}
+						},
+					},
+				],
+			);
+		} catch (error) {
+			if (error instanceof Error && error.message.toLowerCase().includes('different document picking in progress')) {
+				Alert.alert('Importación en curso', 'Espera a que termine el selector de archivos actual.');
+				return;
+			}
+
+			if (!(error instanceof Error) || !error.message.toLowerCase().includes('cancel')) {
+				Alert.alert('Error', 'No se pudo leer el archivo');
+				console.error(error);
+			}
+		} finally {
+			pickerInProgressRef.current = false;
+			setIsPickingDocument(false);
+		}
 	};
 
 	return (
@@ -40,9 +131,19 @@ export function SettingsScreen() {
 
 			<View style={[styles.section, { borderColor: theme.border }]}>
 				<Text style={[styles.sectionTitle, { color: theme.text }]}>Datos</Text>
-				<Button title="Importar datos" onPress={handleImportData} variant="primary" />
+				<Button
+					title={isPickingDocument || isImportingData ? 'Importando...' : 'Importar datos'}
+					onPress={handleImportData}
+					variant="primary"
+					disabled={isDataActionBusy}
+				/>
 				<View style={{ height: 8 }} />
-				<Button title="Exportar datos" onPress={handleExportData} variant="primary" />
+				<Button
+					title={isExportingData ? 'Exportando...' : 'Exportar datos'}
+					onPress={handleExportData}
+					variant="primary"
+					disabled={isDataActionBusy}
+				/>
 			</View>
 
 			<View style={[styles.section, { borderColor: theme.border }]}>

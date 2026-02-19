@@ -10,12 +10,18 @@ import {
 	updateExercise,
 } from '../db/exercises';
 import { getHistory, getProgressByExercise, HistoryRow, ProgressPoint } from '../db/history';
-import { initDatabase } from '../db/database';
+import { getDb, initDatabase } from '../db/database';
 import { createRoutine, deleteRoutine, getRoutines, renameRoutine, reorderRoutines, RoutineRow } from '../db/routines';
 
 export type Routine = RoutineRow;
 export type Exercise = ExerciseRow;
 export type HistoryEntry = HistoryRow;
+
+type ImportDataPayload = {
+	routines?: Array<Partial<Routine>>;
+	exercises?: Array<Partial<Exercise>>;
+	history?: Array<Partial<Pick<HistoryEntry, 'exercise_id' | 'date' | 'weight' | 'sets'>>>;
+};
 
 type AppContextValue = {
 	loading: boolean;
@@ -41,6 +47,12 @@ type AppContextValue = {
 	loadHistory: () => Promise<void>;
 	loadProgress: (exerciseId: number) => Promise<void>;
 	loadAllExercises: () => Promise<Exercise[]>;
+	importData: (payload: ImportDataPayload) => Promise<void>;
+	getExportData: () => Promise<{
+		routines: Routine[];
+		exercises: Exercise[];
+		history: HistoryEntry[];
+	}>;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -74,6 +86,117 @@ export function AppProvider({ children }: PropsWithChildren) {
 
 	const loadAllExercises = async () => {
 		return getAllExercises();
+	};
+
+	const importData = async (payload: ImportDataPayload) => {
+		const db = await getDb();
+		const routinesToImport = Array.isArray(payload.routines) ? payload.routines : [];
+		const exercisesToImport = Array.isArray(payload.exercises) ? payload.exercises : [];
+		const historyToImport = Array.isArray(payload.history) ? payload.history : [];
+
+		await db.withTransactionAsync(async () => {
+			await db.runAsync('DELETE FROM history;');
+			await db.runAsync('DELETE FROM exercises;');
+			await db.runAsync('DELETE FROM routines;');
+
+			const routineIdMap = new Map<number, number>();
+			const sortedRoutines = [...routinesToImport].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+			for (const [index, routine] of sortedRoutines.entries()) {
+				const name =
+					typeof routine.name === 'string' && routine.name.trim().length > 0
+						? routine.name.trim()
+						: `Rutina ${index + 1}`;
+				const order = Number.isFinite(routine.order) ? Number(routine.order) : index;
+				const createdAt =
+					typeof routine.created_at === 'string' && routine.created_at
+						? routine.created_at
+						: new Date().toISOString();
+
+				const inserted = await db.runAsync(
+					'INSERT INTO routines (name, "order", created_at) VALUES (?, ?, ?);',
+					name,
+					order,
+					createdAt,
+				);
+
+				if (typeof routine.id === 'number') {
+					routineIdMap.set(routine.id, Number(inserted.lastInsertRowId));
+				}
+			}
+
+			const exerciseIdMap = new Map<number, number>();
+			const sortedExercises = [...exercisesToImport].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+			for (const [index, exercise] of sortedExercises.entries()) {
+				if (typeof exercise.routine_id !== 'number') {
+					continue;
+				}
+
+				const mappedRoutineId = routineIdMap.get(exercise.routine_id);
+				if (!mappedRoutineId) {
+					continue;
+				}
+
+				const name =
+					typeof exercise.name === 'string' && exercise.name.trim().length > 0
+						? exercise.name.trim()
+						: `Ejercicio ${index + 1}`;
+				const weight = Number.isFinite(exercise.weight) ? Number(exercise.weight) : 0;
+				const record = Number.isFinite(exercise.record) ? Number(exercise.record) : weight;
+				const sets =
+					typeof exercise.sets === 'string' && exercise.sets.trim().length > 0 ? exercise.sets.trim() : '3x10';
+				const order = Number.isFinite(exercise.order) ? Number(exercise.order) : index;
+
+				const inserted = await db.runAsync(
+					'INSERT INTO exercises (routine_id, name, weight, record, sets, "order") VALUES (?, ?, ?, ?, ?, ?);',
+					mappedRoutineId,
+					name,
+					weight,
+					record,
+					sets,
+					order,
+				);
+
+				if (typeof exercise.id === 'number') {
+					exerciseIdMap.set(exercise.id, Number(inserted.lastInsertRowId));
+				}
+			}
+
+			for (const entry of historyToImport) {
+				if (typeof entry.exercise_id !== 'number') {
+					continue;
+				}
+
+				const mappedExerciseId = exerciseIdMap.get(entry.exercise_id);
+				if (!mappedExerciseId) {
+					continue;
+				}
+
+				const date = typeof entry.date === 'string' && entry.date ? entry.date : new Date().toISOString();
+				const weight = Number.isFinite(entry.weight) ? Number(entry.weight) : 0;
+				const sets = typeof entry.sets === 'string' && entry.sets.trim().length > 0 ? entry.sets.trim() : '3x10';
+
+				await db.runAsync(
+					'INSERT INTO history (exercise_id, date, weight, sets) VALUES (?, ?, ?, ?);',
+					mappedExerciseId,
+					date,
+					weight,
+					sets,
+				);
+			}
+		});
+
+		const updatedRoutines = await getRoutines();
+		setRoutines(updatedRoutines);
+
+		if (updatedRoutines[0]) {
+			await loadExercises(updatedRoutines[0].id);
+		} else {
+			setExercises([]);
+		}
+
+		await loadHistory();
 	};
 
 	const addRoutine = async (name: string) => {
@@ -177,6 +300,18 @@ export function AppProvider({ children }: PropsWithChildren) {
 			loadHistory,
 			loadProgress,
 			loadAllExercises,
+			importData,
+			getExportData: async () => {
+				const allRoutines = await getRoutines();
+				const allExercises = await getAllExercises();
+				const allHistory = await getHistory();
+
+				return {
+					routines: allRoutines,
+					exercises: allExercises,
+					history: allHistory,
+				};
+			},
 		}),
 		[loading, routines, exercises, history, progress],
 	);
