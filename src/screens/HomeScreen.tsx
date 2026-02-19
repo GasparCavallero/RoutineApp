@@ -13,7 +13,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
-function ThemeSlider({ onPress, mode, theme }: { onPress: () => void; mode: 'light' | 'dark'; theme: any }) {
+export function ThemeSlider({ onPress, mode, theme }: { onPress: () => void; mode: 'light' | 'dark'; theme: any }) {
 	const slideAnim = useRef(new Animated.Value(mode === 'dark' ? 22 : 2)).current;
 
 	useEffect(() => {
@@ -85,7 +85,6 @@ export function HomeScreen() {
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			headerLeft: () => <ThemeSlider onPress={toggleTheme} mode={mode} theme={theme} />,
 			headerRight: () => (
 				<View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
 					<Pressable 

@@ -6,9 +6,11 @@ import { HistoryScreen } from '../screens/HistoryScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { RoutineScreen } from '../screens/RoutineScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { RoutinesIcon } from '../components/RoutinesIcon';
 import { HistoryIcon } from '../components/HistoryIcon';
 import { ProgressIcon } from '../components/ProgressIcon';
+import { SettingsIcon } from '../components/SettingsIcon';
 
 export type RootStackParamList = {
 	MainTabs: undefined;
@@ -19,6 +21,7 @@ export type MainTabParamList = {
 	Home: undefined;
 	History: undefined;
 	Progress: undefined;
+	Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -59,6 +62,14 @@ function MainTabs() {
 				options={{ 
 					title: 'Progreso',
 					tabBarIcon: ({ color, size }) => <ProgressIcon color={color} size={size} />
+				}} 
+			/>
+			<Tab.Screen 
+				name="Settings" 
+				component={SettingsScreen} 
+				options={{ 
+					title: 'Opciones',
+					tabBarIcon: ({ color, size }) => <SettingsIcon color={color} size={size} />
 				}} 
 			/>
 		</Tab.Navigator>
