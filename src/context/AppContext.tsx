@@ -269,11 +269,35 @@ export function AppProvider({ children }: PropsWithChildren) {
 	};
 
 	useEffect(() => {
+		const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+			let timeoutId: ReturnType<typeof setTimeout> | undefined;
+			const timeoutPromise = new Promise<never>((_, reject) => {
+				timeoutId = setTimeout(() => reject(new Error(`${label} timeout after ${ms}ms`)), ms);
+			});
+
+			try {
+				return await Promise.race([promise, timeoutPromise]);
+			} finally {
+				if (timeoutId) {
+					clearTimeout(timeoutId);
+				}
+			}
+		};
+
 		const bootstrap = async () => {
-			await initDatabase();
-			await loadRoutines();
-			await loadHistory();
-			setLoading(false);
+			try {
+				await withTimeout(initDatabase(), 10000, 'initDatabase');
+				await withTimeout(loadRoutines(), 10000, 'loadRoutines');
+				await withTimeout(loadHistory(), 10000, 'loadHistory');
+			} catch (error) {
+				console.error('App bootstrap failed:', error);
+				setRoutines([]);
+				setExercises([]);
+				setHistory([]);
+				setProgress([]);
+			} finally {
+				setLoading(false);
+			}
 		};
 
 		bootstrap();

@@ -20,9 +20,13 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 
 	useEffect(() => {
 		const load = async () => {
-			const saved = await AsyncStorage.getItem(STORAGE_KEY);
-			if (saved === 'light' || saved === 'dark') {
-				setMode(saved);
+			try {
+				const saved = await AsyncStorage.getItem(STORAGE_KEY);
+				if (saved === 'light' || saved === 'dark') {
+					setMode(saved);
+				}
+			} catch (error) {
+				console.error('Theme load failed:', error);
 			}
 		};
 
@@ -36,7 +40,9 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 			toggleTheme: () => {
 				const next = mode === 'dark' ? 'light' : 'dark';
 				setMode(next);
-				AsyncStorage.setItem(STORAGE_KEY, next);
+				AsyncStorage.setItem(STORAGE_KEY, next).catch((error) => {
+					console.error('Theme save failed:', error);
+				});
 			},
 		}),
 		[mode],
