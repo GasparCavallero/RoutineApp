@@ -1,31 +1,43 @@
 # RoutineApp
 
-RoutineApp es una aplicación desarrollada en TypeScript utilizando Expo.
+RoutineApp es una aplicación móvil desarrollada en TypeScript y Expo que te ayuda a organizar y gestionar tus rutinas diarias desde el smartphone.
 
-## Requisitos previos
+## Características principales
 
-- Tener [Expo Go](https://expo.dev/client) instalado en tu dispositivo móvil. Puedes encontrarlo en la App Store (iOS) o Google Play Store (Android).
-- Node.js instalado en tu computadora.
+- Gestión de rutinas diarias
+- Notificaciones
+- Interfaz sencilla y amigable
+- 100% TypeScript
 
-## Instalación y ejecución
+## Instalación y uso
 
-1. Instala las dependencias del proyecto (si usas npm):
+### Requisitos
+
+- Node.js
+- [Expo Go](https://expo.dev/client) en tu dispositivo móvil
+
+### Pasos para empezar
+
+1. Instala las dependencias:
 
    ```bash
    npm install
    ```
 
-2. Inicia el proyecto con el siguiente comando:
+2. Inicia el servidor de desarrollo:
 
    ```bash
    npx expo start --tunnel
    ```
 
-3. Escanea el código QR que aparece en la terminal o el navegador usando la aplicación Expo Go en tu teléfono.
+3. Escanea el QR con la app Expo Go en tu smartphone y comienza a usar la aplicación.
 
-¡Listo! Al escanear el QR, podrás usar RoutineApp en tu dispositivo.
+## Colaboración
 
-## Notas
+¿Quieres colaborar? Por favor revisa [CONTRIBUTING.md](CONTRIBUTING.md).
 
-- El proyecto está 100% escrito en TypeScript.
-- Si tienes algún problema, asegúrate de que tu red permita la conexión entre tu equipo y el dispositivo móvil.
+## Licencia
+
+Ve el archivo [LICENSE](LICENSE) para más detalles.
+
+---
