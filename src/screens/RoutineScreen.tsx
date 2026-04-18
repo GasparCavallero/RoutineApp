@@ -1,7 +1,7 @@
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist'; 
 import { Button } from '../components/Button';
 import { EditIcon } from '../components/EditIcon';
 import { ExerciseCard } from '../components/ExerciseCard';
@@ -10,6 +10,8 @@ import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { ExerciseRow } from '../db/exercises';
+
 
 type RoutineRoute = RouteProp<RootStackParamList, 'Routine'>;
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Routine'>;
@@ -132,50 +134,61 @@ export function RoutineScreen() {
 		setShowAddModal(false);
 	};
 
-	const handleEditWeight = async () => {
-		if (!editWeightExerciseId) return;
 
-		const weight = parseFloat(editWeightValue.replace(',', '.'));
-
-		if (isNaN(weight) || weight < 0) {
-			Alert.alert('Error', 'El peso debe ser un número válido');
-			return;
-		}
-
-		await updateExerciseData(editWeightExerciseId, { weight }, routineId);
-		setEditWeightExerciseId(null);
-		setEditWeightValue('');
-	};
+const handleEditWeight = async () => {
+	if (!editWeightExerciseId) return;
+	const weight = parseFloat(editWeightValue.replace(',', '.'));
+	if (isNaN(weight) || weight < 0) {
+		Alert.alert('Error', 'El peso debe ser un número válido');
+		return;
+	}
+	await updateExerciseData(editWeightExerciseId, { weight }, routineId);
+	setEditWeightExerciseId(null);
+	setEditWeightValue('');
+};
 
 	const sortedExercises = useMemo(() => [...exercises].sort((a, b) => a.order - b.order), [exercises]);
+	const flatListRef = useRef<any>(null);
 
-	const renderItem = ({ item, drag, isActive }: RenderItemParams<(typeof sortedExercises)[number]>) => (
-		<View style={{ opacity: isActive ? 0.8 : 1 }}>
-			<ExerciseCard
-				name={item.name}
-				weight={item.weight}
-				record={item.record}
-				sets={item.sets}
-				editMode={editMode}
-				onDecrease={() => changeExerciseWeight(item.id, -2.5, routineId)}
-				onIncrease={() => changeExerciseWeight(item.id, 2.5, routineId)}
-				onLongPress={drag}
-				onRename={() => {
-					setRenameExerciseId(item.id);
-					setRenameExerciseName(item.name);
-				}}
-				onEditWeight={
-					editMode
-						? () => {
+	const renderItem = (params: RenderItemParams<ExerciseRow>) => {
+		const { item, drag, isActive } = params;
+		const index = 'index' in params ? (params as any).index : sortedExercises.findIndex((e: ExerciseRow) => e.id === item.id);
+		return (
+			<View style={{ opacity: isActive ? 0.8 : 1 }}>
+				<ExerciseCard
+					name={item.name}
+					weight={item.weight}
+					record={item.record}
+					sets={item.sets}
+					editMode={editMode}
+					onDecrease={() => changeExerciseWeight(item.id, -2.5, routineId)}
+					onIncrease={() => changeExerciseWeight(item.id, 2.5, routineId)}
+					onLongPress={drag}
+					onRename={() => {
+						setRenameExerciseId(item.id);
+						setRenameExerciseName(item.name);
+					}}
+					onEditWeight={
+						editMode
+							? () => {
 								setEditWeightExerciseId(item.id);
 								setEditWeightValue(String(item.weight));
-						  }
-						: undefined
-				}
-				onDelete={() => removeExercise(item.id, routineId)}
-			/>
-		</View>
-	);
+							}
+							: undefined
+					}
+					onDelete={() => removeExercise(item.id, routineId)}
+					onEditSets={editMode ? async (newSets) => {
+						await updateExerciseData(item.id, { sets: newSets }, routineId);
+					} : undefined}
+					onFocusSetsInput={editMode && index >= 0 ? () => {
+						if (flatListRef.current && typeof flatListRef.current.scrollToIndex === 'function') {
+							flatListRef.current.scrollToIndex({ index, animated: true });
+						}
+					} : undefined}
+				/>
+			</View>
+		);
+	};
 
 	return (
 		<View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -292,6 +305,7 @@ export function RoutineScreen() {
 				</View>
 			) : (
 				<DraggableFlatList
+					ref={flatListRef}
 					data={sortedExercises}
 					keyExtractor={(item) => String(item.id)}
 					renderItem={renderItem}
@@ -299,6 +313,13 @@ export function RoutineScreen() {
 						moveExercises(data.map((item) => item.id), routineId);
 					}}
 					contentContainerStyle={styles.list}
+					onScrollToIndexFailed={({ index }) => {
+						setTimeout(() => {
+							if (flatListRef.current) {
+								flatListRef.current.scrollToIndex({ index, animated: true });
+							}
+						}, 300);
+					}}
 				/>
 			)}
 		</View>

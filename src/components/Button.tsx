@@ -6,9 +6,10 @@ type ButtonProps = {
 	onPress: () => void;
 	variant?: 'primary' | 'danger' | 'ghost';
 	disabled?: boolean;
+	icon?: React.ReactNode;
 };
 
-export function Button({ title, onPress, variant = 'primary', disabled = false }: ButtonProps) {
+export function Button({ title, onPress, variant = 'primary', disabled = false, icon }: ButtonProps) {
 	const { theme } = useThemeContext();
 
 	const backgroundColor =
@@ -25,9 +26,20 @@ export function Button({ title, onPress, variant = 'primary', disabled = false }
 					borderColor: theme.border,
 					opacity: pressed || disabled ? 0.7 : 1,
 				},
+				icon && !title ? { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 } : {},
 			]}
 		>
-			<Text style={[styles.label, { color: variant === 'ghost' ? theme.text : theme.surface }]}>{title}</Text>
+			{icon && !title ? (
+				// Solo icono, centrado
+				icon
+			) : (
+				<>
+					{icon ? (
+						<Text style={[styles.label, { color: variant === 'ghost' ? theme.text : theme.surface, marginRight: 6 }]}>{icon}</Text>
+					) : null}
+					<Text style={[styles.label, { color: variant === 'ghost' ? theme.text : theme.surface }]}>{title}</Text>
+				</>
+			)}
 		</Pressable>
 	);
 }

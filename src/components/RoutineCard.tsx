@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useThemeContext } from '../context/ThemeContext';
 import { Button } from './Button';
 import { DragIcon } from './DragIcon';
+import { TrashIcon } from './TrashIcon';
 
 type RoutineCardProps = {
 	name: string;
@@ -38,7 +39,7 @@ export function RoutineCard({ name, editMode, onPress, onLongPress, onRename, on
 			{editMode ? (
 				<View style={styles.actions}>
 					<Button title="Renombrar" onPress={onRename} variant="ghost" />
-					<Button title="Borrar" onPress={onDelete} variant="danger" />
+					<Button title="" onPress={onDelete} variant="danger" icon={<TrashIcon color="#fff" size={16} />} />
 				</View>
 			) : null}
 		</Pressable>

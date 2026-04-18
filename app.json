@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gaspi.routineapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.gaspi.routineapp",
@@ -34,6 +38,7 @@
       "eas": {
         "projectId": "76003ff9-4349-4fac-83e5-40a006a66794"
       }
-    }
+    },
+    "owner": "gasparcavallero"
   }
 }
