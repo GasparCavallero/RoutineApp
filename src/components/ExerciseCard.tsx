@@ -44,9 +44,9 @@ export function ExerciseCard(props: ExerciseCardProps) {
   const [renameValue, setRenameValue] = useState(name);
 
   function parseSets(sets: string) {
-    const match = sets.match(/^(\\d+)\\s*[xX]\\s*(.+)$/);
+    const match = sets.match(/^(\d+)\s*[xX]\s*(.+)$/);
     if (match) return { series: match[1], reps: match[2] };
-    if (/^\\d+$/.test(sets)) return { series: sets, reps: '' };
+    if (/^\d+$/.test(sets)) return { series: sets, reps: '' };
     return { series: '', reps: sets };
   }
   const [seriesValue, setSeriesValue] = useState(parseSets(sets).series);
