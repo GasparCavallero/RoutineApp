@@ -1,5 +1,7 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, View, Animated, ScrollView } from 'react-native';
+import { useRef, useState, useLayoutEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { useHeaderHeight } from '@react-navigation/elements';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
@@ -12,6 +14,9 @@ export function SettingsScreen() {
 	const { theme, mode, toggleTheme } = useThemeContext();
 	const { routines, exercises, getExportData, importData } = useAppContext();
 	const pickerInProgressRef = useRef(false);
+	const navigation = useNavigation();
+	const headerHeight = useHeaderHeight();
+	const scrollY = useRef(new Animated.Value(0)).current;
 	const [isPickingDocument, setIsPickingDocument] = useState(false);
 	const [isImportingData, setIsImportingData] = useState(false);
 	const [isExportingData, setIsExportingData] = useState(false);
@@ -120,8 +125,39 @@ export function SettingsScreen() {
 		}
 	};
 
+	const SCROLL_THRESHOLD = 80;
+
+	const headerOpacity = scrollY.interpolate({
+		inputRange: [0, SCROLL_THRESHOLD],
+		outputRange: [0, 1],
+		extrapolate: 'clamp',
+	});
+
+	useLayoutEffect(() => {
+		navigation.setOptions({
+			headerTransparent: true,
+			headerShadowVisible: false,
+			headerBackground: () => (
+				<Animated.View
+					style={{
+						flex: 1,
+						backgroundColor: headerOpacity,
+					}}
+				/>
+			),
+		});
+	}, [navigation, headerOpacity]);
+
 	return (
-		<ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
+		<Animated.ScrollView
+			scrollEventThrottle={16}
+			onScroll={Animated.event(
+				[{ nativeEvent: { contentOffset: { y: scrollY } } }],
+				{ useNativeDriver: false }
+			)}
+			style={[styles.container, { backgroundColor: "transparent" }]}
+			contentContainerStyle={{ paddingTop: headerHeight + 14 }}
+		>
 			<View style={[styles.section, { borderColor: theme.border }]}>
 				<View style={styles.themeHeader}>
 					<Text style={[styles.sectionTitle, { color: theme.text }]}>Tema</Text>
@@ -151,7 +187,7 @@ export function SettingsScreen() {
 					Versión 1.0.0
 				</Text>
 			</View>
-		</ScrollView>
+		</Animated.ScrollView>
 	);
 }
 

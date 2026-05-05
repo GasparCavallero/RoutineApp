@@ -76,18 +76,31 @@ function HomeStackNavigator() {
 }
 
 function HistoryStackNavigator() {
-	const options = useTabStackOptions();
 	const { theme } = useThemeContext();
+
+	const transparentOptions = {
+		headerTransparent: true,
+		headerShadowVisible: false,
+		headerTintColor: theme.primary,
+		headerTitleStyle: { color: theme.text },
+	};
+
 	return (
-		<HistoryStack.Navigator 
+		<HistoryStack.Navigator
 			screenOptions={{
-				...options,
 				contentStyle: {
-				backgroundColor: theme.background,
+					backgroundColor: theme.background,
 				},
 			}}
 		>
-			<HistoryStack.Screen name="History" component={HistoryScreen} options={{ title: 'Historial' }} />
+			<HistoryStack.Screen
+				name="History"
+				component={HistoryScreen}
+				options={{
+					...transparentOptions,
+					title: 'Historial',
+				}}
+			/>
 		</HistoryStack.Navigator>
 	);
 }
@@ -123,21 +136,52 @@ function ProgressStackNavigator() {
 }
 
 function SettingsStackNavigator() {
-	const options = useTabStackOptions();
 	const { theme } = useThemeContext();
+
+	const transparentOptions = {
+		headerTransparent: true,
+		headerShadowVisible: false,
+		headerTintColor: theme.primary,
+		headerTitleStyle: { color: theme.text },
+	};
+	
 	return (
 		<SettingsStack.Navigator 
 			screenOptions={{
-				...options,
+				...transparentOptions,
 				contentStyle: {
 				backgroundColor: theme.background,
 				},
 			}}
 		>
-			<SettingsStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Opciones' }} />
+			<SettingsStack.Screen 
+				name="Settings" 
+				component={SettingsScreen} 
+				options={{ 
+					...transparentOptions,
+					title: 'Opciones', 
+				}} 
+			/>
 		</SettingsStack.Navigator>
 	);
 }
+
+// function SettingsStackNavigator() {
+// 	const options = useTabStackOptions();
+// 	const { theme } = useThemeContext();
+// 	return (
+// 		<SettingsStack.Navigator 
+// 			screenOptions={{
+// 				...options,
+// 				contentStyle: {
+// 				backgroundColor: theme.background,
+// 				},
+// 			}}
+// 		>
+// 			<SettingsStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Opciones' }} />
+// 		</SettingsStack.Navigator>
+// 	);
+// }
 
 export function AppNavigator() {
 	const { theme, mode } = useThemeContext();
