@@ -1,7 +1,7 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useLayoutEffect, useMemo, useState, useEffect, useRef } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, KeyboardAvoidingView, Modal, Platform } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, KeyboardAvoidingView, Modal, Platform, Dimensions } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import { Button } from '../components/Button';
 import { EditIcon } from '../components/EditIcon';
@@ -273,6 +273,8 @@ export function HomeScreen() {
 						styles.list,
 						{
 							paddingTop: headerHeight + 14, // Ajusta el padding top para no quedar debajo del header
+							flexGrow: 1,
+							minHeight: Dimensions.get('window').height - headerHeight,
 						}
 					]}
 					scrollEventThrottle={16}
