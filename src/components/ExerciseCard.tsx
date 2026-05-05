@@ -104,7 +104,7 @@ export function ExerciseCard(props: ExerciseCardProps) {
                 borderColor: theme.border,
                 borderRadius: 6,
                 paddingHorizontal: 8,
-                paddingVertical: 2,
+                paddingVertical: 6,
               }}
             >
               <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '700' }}>-2.5</Text>
@@ -118,14 +118,14 @@ export function ExerciseCard(props: ExerciseCardProps) {
                 borderColor: theme.border,
                 borderRadius: 6,
                 paddingHorizontal: 8,
-                paddingVertical: 2,
+                paddingVertical: 6,
               }}
             >
               <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '700' }}>+2.5</Text>
             </Pressable>
           </View>
         </View>
-        <Text style={[styles.value, { color: theme.text }]}>Récord: {toKg(record)}</Text>
+        <Text style={[styles.value, { color: theme.textMuted }]}>Récord: {toKg(record)}</Text>
         <Text style={[styles.value, { color: theme.textMuted }]}>Series: {sets}</Text>
       </View>
 
