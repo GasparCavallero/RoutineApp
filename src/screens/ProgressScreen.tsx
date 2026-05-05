@@ -1,11 +1,12 @@
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState, useLayoutEffect, useRef } from 'react';
+import { Dimensions, ScrollView, StyleSheet, Text, View, Animated } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Button } from '../components/Button';
 import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
 import { formatDate, toKg } from '../utils/helpers';
+import { useHeaderHeight } from '@react-navigation/elements';
 
 const chartWidth = Math.max(Dimensions.get('window').width - 28, 260);
 
@@ -15,6 +16,33 @@ export function ProgressScreen() {
 
 	const [exerciseList, setExerciseList] = useState<Array<{ id: number; name: string }>>([]);
 	const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
+
+	const headerHeight = useHeaderHeight();
+
+	const navigation = useNavigation();
+	const scrollY = useRef(new Animated.Value(0)).current;
+
+	const SCROLL_THRESHOLD = 80;
+
+	const headerOpacity = scrollY.interpolate({
+		inputRange: [0, SCROLL_THRESHOLD],
+		outputRange: [0, 1],
+		extrapolate: 'clamp',
+	});
+
+	useLayoutEffect(() => {
+		navigation.setOptions({
+			headerTransparent: true,
+			headerBackground: () => (
+				<Animated.View
+					style={{
+						flex: 1,
+						backgroundColor: headerOpacity,
+					}}
+				/>
+			),
+		});
+	}, [navigation, headerOpacity, theme.surface]);
 
 	useFocusEffect(
 		useCallback(() => {
@@ -53,7 +81,19 @@ export function ProgressScreen() {
 	);
 
 	return (
-		<ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
+		<Animated.ScrollView 
+			scrollEventThrottle={16}
+			onScroll={Animated.event(
+				[{ nativeEvent: { contentOffset: { y: scrollY } } }], 
+				{ useNativeDriver: false }
+			)}
+			style={[styles.container, { backgroundColor: theme.background }]} 
+			contentContainerStyle={[
+				styles.content, 
+				{ 
+					paddingTop: headerHeight + 14 
+				}
+			]}>
 			<Text style={[styles.title, { color: theme.text }]}>Seleccioná un ejercicio</Text>
 
 			<View style={styles.selector}>
@@ -113,7 +153,7 @@ export function ProgressScreen() {
 						))}
 				</View>
 			) : null}
-		</ScrollView>
+		</Animated.ScrollView>
 	);
 }
 
@@ -122,7 +162,8 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	content: {
-		padding: 14,
+		paddingHorizontal: 14,
+		paddingBottom: 0,
 		gap: 12,
 	},
 	title: {

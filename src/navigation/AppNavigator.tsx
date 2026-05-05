@@ -93,18 +93,31 @@ function HistoryStackNavigator() {
 }
 
 function ProgressStackNavigator() {
-	const options = useTabStackOptions();
 	const { theme } = useThemeContext();
+
+	const transparentOptions = {
+		headerTransparent: true,
+		headerShadowVisible: false,
+		headerTintColor: theme.primary,
+		headerTitleStyle: { color: theme.text },
+	};
+
 	return (
-		<ProgressStack.Navigator 
+		<ProgressStack.Navigator
 			screenOptions={{
-				...options,
 				contentStyle: {
-				backgroundColor: theme.background,
+					backgroundColor: theme.background,
 				},
 			}}
 		>
-			<ProgressStack.Screen name="Progress" component={ProgressScreen} options={{ title: 'Progreso' }} />
+			<ProgressStack.Screen
+				name="Progress"
+				component={ProgressScreen}
+				options={{
+					...transparentOptions,
+					title: 'Progreso',
+				}}
+			/>
 		</ProgressStack.Navigator>
 	);
 }
