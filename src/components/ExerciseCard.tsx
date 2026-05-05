@@ -92,7 +92,39 @@ export function ExerciseCard(props: ExerciseCardProps) {
         ) : null}
       </View>
       <View style={styles.metrics}>
-        <Text style={[styles.value, { color: theme.text }]}>Peso: {toKg(weight)}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={[styles.value, { color: theme.text }]}>Peso: {toKg(weight)}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Pressable
+              onPress={onDecrease}
+              hitSlop={8}
+              style={{
+                backgroundColor: theme.surface,
+                borderWidth: 1,
+                borderColor: theme.border,
+                borderRadius: 6,
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+              }}
+            >
+              <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '700' }}>-2.5</Text>
+            </Pressable>
+            <Pressable
+              onPress={onIncrease}
+              hitSlop={8}
+              style={{
+                backgroundColor: theme.surface,
+                borderWidth: 1,
+                borderColor: theme.border,
+                borderRadius: 6,
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+              }}
+            >
+              <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '700' }}>+2.5</Text>
+            </Pressable>
+          </View>
+        </View>
         <Text style={[styles.value, { color: theme.text }]}>Récord: {toKg(record)}</Text>
         <Text style={[styles.value, { color: theme.textMuted }]}>Series: {sets}</Text>
       </View>
