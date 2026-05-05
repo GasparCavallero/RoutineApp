@@ -9,9 +9,11 @@ import { Input } from '../components/Input';
 import { RoutineCard } from '../components/RoutineCard';
 import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { HomeStackParamList } from '../navigation/AppNavigator';
+import { useHeaderHeight } from '@react-navigation/elements';
 
-type Navigation = NativeStackNavigationProp<RootStackParamList>;
+
+type Navigation = NativeStackNavigationProp<HomeStackParamList, 'Home'>;
 
 export function ThemeSlider({ onPress, mode, theme }: { onPress: () => void; mode: 'light' | 'dark'; theme: any }) {
 	const slideAnim = useRef(new Animated.Value(mode === 'dark' ? 22 : 2)).current;
@@ -77,6 +79,17 @@ export function HomeScreen() {
 	const [renameRoutineName, setRenameRoutineName] = useState('');
 	const [showAddModal, setShowAddModal] = useState(false);
 
+	const scrollY = useRef(new Animated.Value(0)).current;
+	const SCROLL_THRESHOLD = 10;
+
+	const headerBg = scrollY.interpolate({
+		inputRange: [0, SCROLL_THRESHOLD],
+		outputRange: ['transparent', theme.surface],
+		extrapolate: 'clamp',
+	});
+
+	const headerHeight = useHeaderHeight();
+
 	useFocusEffect(
 		useCallback(() => {
 			loadRoutines();
@@ -85,44 +98,54 @@ export function HomeScreen() {
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
+			headerBackground: () => (
+				<Animated.View
+					style={{
+						flex: 1,
+						backgroundColor: headerBg,
+					}}
+				/>
+			),
 			headerRight: () => (
 				<View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
-					<Pressable 
-						onPress={() => setEditMode((prev) => !prev)}
-						style={({ pressed }) => [
-							styles.headerButton,
-							{ 
-								backgroundColor: pressed ? theme.border : 'transparent',
-								borderColor: theme.border,
-								height: 32,
+					<View>
+						<Pressable
+							onPress={() => setEditMode((prev) => !prev)}
+							style={({ pressed }) => ({
 								width: 32,
-								paddingHorizontal: 0,
-							}
-						]}
-					>
-						{editMode ? (
-							<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
-						) : (
-							<EditIcon color={theme.primary} size={20} />
-						)}
-					</Pressable>
-					<Pressable 
-						onPress={() => setShowAddModal(true)} 
-						style={({ pressed }) => [
-							styles.headerButton,
-							styles.addButton,
-							{ 
+								height: 32,
+								borderRadius: 6,
 								backgroundColor: pressed ? theme.border : 'transparent',
-								borderColor: theme.border 
-							}
-						]}
-					>
-						<Text style={{ color: theme.primary, fontSize: 28, fontWeight: '600', lineHeight: 28 }}>+</Text>
-					</Pressable>
+								alignItems: 'center',
+								justifyContent: 'center',
+							})}
+						>
+							{editMode ? (
+								<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
+							) : (
+								<EditIcon color={theme.primary} size={20} />
+							)}
+						</Pressable>
+					</View>
+					<View>
+						<Pressable
+							onPress={() => setShowAddModal(true)}
+							style={({ pressed }) => ({
+								width: 32,
+								height: 32,
+								borderRadius: 6,
+								backgroundColor: pressed ? theme.border : 'transparent',
+								alignItems: 'center',
+								justifyContent: 'center',
+							})}
+						>
+							<Text style={{ color: theme.primary, fontSize: 28, fontWeight: '600', lineHeight: 28 }}>+</Text>
+						</Pressable>
+					</View>
 				</View>
 			),
 		});
-	}, [navigation, editMode, theme, mode, toggleTheme]);
+	}, [navigation, editMode, theme, mode, toggleTheme, headerBg]);
 
 	const sortedRoutines = useMemo(() => [...routines].sort((a, b) => a.order - b.order), [routines]);
 
@@ -224,7 +247,17 @@ export function HomeScreen() {
 					onDragEnd={({ data }) => {
 						moveRoutines(data.map((item) => item.id));
 					}}
-					contentContainerStyle={styles.list}
+					contentContainerStyle={[
+						styles.list,
+						{
+							paddingTop: headerHeight + 14, // Ajusta el padding top para no quedar debajo del header
+						}
+					]}
+					scrollEventThrottle={16}
+					onScroll={Animated.event(
+						[{ nativeEvent: { contentOffset: { y: scrollY } } }],
+						{ useNativeDriver: false }
+					)}
 				/>
 			)}
 		</View>
@@ -234,26 +267,14 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 14,
+		paddingHorizontal: 14,
+		paddingBottom: 0,
 		gap: 12,
 	},
 	center: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-	},
-	headerButton: {
-		borderRadius: 6,
-		borderWidth: 1,
-		alignItems: 'center',
-		justifyContent: 'center',
-		minWidth: 32,
-	},
-	addButton: {
-		width: 32,
-		height: 32,
-		paddingHorizontal: 0,
-		paddingVertical: 0,
 	},
 	form: {
 		flexDirection: 'row',
@@ -262,7 +283,7 @@ const styles = StyleSheet.create({
 	},
 	list: {
 		gap: 10,
-		paddingBottom: 20,
+		paddingBottom: 0,
 	},
 	empty: {
 		flex: 1,

@@ -1,6 +1,6 @@
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useLayoutEffect, useMemo, useState, useRef } from 'react';
+import { Alert, Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist'; 
 import { Button } from '../components/Button';
 import { EditIcon } from '../components/EditIcon';
@@ -8,13 +8,14 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { Input } from '../components/Input';
 import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { HomeStackParamList } from '../navigation/AppNavigator';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { ExerciseRow } from '../db/exercises';
+import { useHeaderHeight } from '@react-navigation/elements';
 
 
-type RoutineRoute = RouteProp<RootStackParamList, 'Routine'>;
-type Navigation = NativeStackNavigationProp<RootStackParamList, 'Routine'>;
+type RoutineRoute = RouteProp<HomeStackParamList, 'Routine'>;
+type Navigation = NativeStackNavigationProp<HomeStackParamList, 'Routine'>;
 
 export function RoutineScreen() {
 	const route = useRoute<RoutineRoute>();
@@ -24,6 +25,17 @@ export function RoutineScreen() {
 	const { theme } = useThemeContext();
 	const { exercises, addExercise, loadExercises, changeExerciseWeight, moveExercises, removeExercise, updateExerciseData } =
 		useAppContext();
+
+	const scrollY = useRef(new Animated.Value(0)).current;
+	const SCROLL_THRESHOLD = 10;
+
+	const headerBg = scrollY.interpolate({
+		inputRange: [0, SCROLL_THRESHOLD],
+		outputRange: ['transparent', theme.surface],
+		extrapolate: 'clamp',
+	});
+
+	const headerHeight = useHeaderHeight();
 
 	const [editMode, setEditMode] = useState(false);
 	const [showAddModal, setShowAddModal] = useState(false);
@@ -44,61 +56,55 @@ export function RoutineScreen() {
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			title: routineName,
-			headerLeft: () => (
-				<Pressable 
-					onPress={() => navigation.goBack()}
-					style={({ pressed }) => ({
-						alignItems: 'center',
-						justifyContent: 'center',
-						marginLeft: 12,
-						opacity: pressed ? 0.5 : 1,
-					})}
-					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-				>
-					<Text style={{ color: theme.primary, fontSize: 28, fontWeight: '400' }}>‹</Text>
-				</Pressable>
+			headerBackground: () => (
+				<Animated.View
+					style={{
+						flex: 1,
+						backgroundColor: headerBg,
+					}}
+				/>
 			),
 			headerRight: () => (
-			<View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
-				<Pressable 
-					onPress={() => setEditMode((prev) => !prev)}
-					style={({ pressed }) => ({
-						width: 32,
-						height: 32,
-						borderRadius: 6,
-						borderWidth: 1,
-						borderColor: theme.border,
-						backgroundColor: pressed ? theme.border : 'transparent',
-						alignItems: 'center',
-						justifyContent: 'center',
-					})}
-					>
-						{editMode ? (
-							<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
-						) : (
-							<EditIcon color={theme.primary} size={20} />
-						)}
-					</Pressable>
-					<Pressable 
-						onPress={() => setShowAddModal(true)} 
-						style={({ pressed }) => ({
-							width: 32,
-							height: 32,
-							borderRadius: 6,
-							borderWidth: 1,
-							borderColor: theme.border,
-							backgroundColor: pressed ? theme.border : 'transparent',
-							alignItems: 'center',
-							justifyContent: 'center',
-						})}
-					>
-						<Text style={{ color: theme.primary, fontSize: 28, fontWeight: '600', lineHeight: 28 }}>+</Text>
-					</Pressable>
+				<View style={{ flexDirection: 'row', gap: 16, marginRight: 8, alignItems: 'center' }} pointerEvents="box-none">
+					<View>
+						<Pressable 
+							onPress={() => setEditMode((prev) => !prev)}
+							style={({ pressed }) => ({
+								width: 32,
+								height: 32,
+								borderRadius: 6,
+								backgroundColor: pressed ? theme.border : 'transparent',
+								alignItems: 'center',
+								justifyContent: 'center',
+							})}
+						>
+							{editMode ? (
+								<Text style={{ color: theme.primary, fontSize: 18 }}>✓</Text>
+							) : (
+								<EditIcon color={theme.primary} size={20} />
+							)}
+						</Pressable>
+					</View>
+					
+					<View>
+						<Pressable 
+							onPress={() => setShowAddModal(true)} 
+							style={({ pressed }) => ({
+								width: 32,
+								height: 32,
+								borderRadius: 6,
+								backgroundColor: pressed ? theme.border : 'transparent',
+								alignItems: 'center',
+								justifyContent: 'center',
+							})}
+						>
+							<Text style={{ color: theme.primary, fontSize: 28, fontWeight: '600', lineHeight: 28 }}>+</Text>
+						</Pressable>
+					</View>
 				</View>
 			),
 		});
-	}, [navigation, editMode, theme]);
+	}, [navigation, editMode, theme, headerBg]);
 
 	const handleAddExercise = async () => {
 		const name = newExerciseName.trim();
@@ -191,7 +197,10 @@ const handleEditWeight = async () => {
 	};
 
 	return (
-		<View style={[styles.container, { backgroundColor: theme.background }]}>
+		<View style={[
+			styles.container, { 
+					backgroundColor: theme.background,
+				}]}>
 			<Modal visible={showAddModal} animationType="slide" transparent onRequestClose={() => setShowAddModal(false)}>
 				<KeyboardAvoidingView
 					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -312,7 +321,17 @@ const handleEditWeight = async () => {
 					onDragEnd={({ data }) => {
 						moveExercises(data.map((item) => item.id), routineId);
 					}}
-					contentContainerStyle={styles.list}
+					contentContainerStyle={[
+						styles.list,
+						{
+							paddingTop: headerHeight + 14, // Ajusta el padding top para no quedar debajo del header
+						}
+					]}
+					scrollEventThrottle={16}
+					onScroll={Animated.event(
+						[{ nativeEvent: { contentOffset: { y: scrollY } } }],
+						{ useNativeDriver: false }
+					)}
 					onScrollToIndexFailed={({ index }) => {
 						setTimeout(() => {
 							if (flatListRef.current) {
@@ -329,7 +348,8 @@ const handleEditWeight = async () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 14,
+		paddingHorizontal: 14,
+		paddingBottom: 0,
 		gap: 12,
 	},
 	form: {
@@ -339,7 +359,7 @@ const styles = StyleSheet.create({
 	},
 	list: {
 		gap: 10,
-		paddingBottom: 20,
+		paddingBottom: 0,
 	},
 	empty: {
 		flex: 1,

@@ -18,61 +18,111 @@ export type RootStackParamList = {
 };
 
 export type MainTabParamList = {
-	Home: undefined;
-	History: undefined;
-	Progress: undefined;
-	Settings: undefined;
+	HomeStack: undefined;
+	HistoryStack: undefined;
+	ProgressStack: undefined;
+	SettingsStack: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+export type HomeStackParamList = {
+	Home: undefined;
+	Routine: { routineId: number; routineName: string };
+};
+
+export type HistoryStackParamList = { History: undefined };
+export type ProgressStackParamList = { Progress: undefined };
+export type SettingsStackParamList = { Settings: undefined };
+
 const Tab = createBottomTabNavigator<MainTabParamList>();
+const HomeStack = createNativeStackNavigator<HomeStackParamList>();
+const HistoryStack = createNativeStackNavigator<HistoryStackParamList>();
+const ProgressStack = createNativeStackNavigator<ProgressStackParamList>();
+const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
-function MainTabs() {
+function useTabStackOptions() {
 	const { theme } = useThemeContext();
+	return {
+		headerStyle: { backgroundColor: theme.surface },
+		headerShadowVisible: true,
+		headerTintColor: theme.text,
+		headerTitleStyle: { color: theme.text },
+	};
+}
 
+function HomeStackNavigator() {
+	const { theme } = useThemeContext();
+	const transparentOptions = {
+		headerTransparent: true,
+		headerShadowVisible: false,
+		headerTintColor: theme.primary,
+		headerTitleStyle: { color: theme.text },
+	};
 	return (
-		<Tab.Navigator
+		<HomeStack.Navigator
 			screenOptions={{
-				headerStyle: { backgroundColor: theme.surface },
-				headerTintColor: theme.text,
-				tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
-				tabBarActiveTintColor: theme.primary,
-				tabBarInactiveTintColor: theme.textMuted,
+				contentStyle: {
+					backgroundColor: theme.background,
+				},
 			}}
 		>
-			<Tab.Screen 
-				name="Home" 
-				component={HomeScreen} 
-				options={{ 
-					title: 'Rutinas',
-					tabBarIcon: ({ color, size }) => <RoutinesIcon color={color} size={size} />
-				}} 
+			<HomeStack.Screen name="Home" component={HomeScreen} options={{ ...transparentOptions, title: 'Rutinas' }} />
+			<HomeStack.Screen
+				name="Routine"
+				component={RoutineScreen}
+				options={({ route }) => ({ ...transparentOptions, title: route.params.routineName })}
 			/>
-			<Tab.Screen 
-				name="History" 
-				component={HistoryScreen} 
-				options={{ 
-					title: 'Historial',
-					tabBarIcon: ({ color, size }) => <HistoryIcon color={color} size={size} />
-				}} 
-			/>
-			<Tab.Screen 
-				name="Progress" 
-				component={ProgressScreen} 
-				options={{ 
-					title: 'Progreso',
-					tabBarIcon: ({ color, size }) => <ProgressIcon color={color} size={size} />
-				}} 
-			/>
-			<Tab.Screen 
-				name="Settings" 
-				component={SettingsScreen} 
-				options={{ 
-					title: 'Opciones',
-					tabBarIcon: ({ color, size }) => <SettingsIcon color={color} size={size} />
-				}} 
-			/>
-		</Tab.Navigator>
+		</HomeStack.Navigator>
+	);
+}
+
+function HistoryStackNavigator() {
+	const options = useTabStackOptions();
+	const { theme } = useThemeContext();
+	return (
+		<HistoryStack.Navigator 
+			screenOptions={{
+				...options,
+				contentStyle: {
+				backgroundColor: theme.background,
+				},
+			}}
+		>
+			<HistoryStack.Screen name="History" component={HistoryScreen} options={{ title: 'Historial' }} />
+		</HistoryStack.Navigator>
+	);
+}
+
+function ProgressStackNavigator() {
+	const options = useTabStackOptions();
+	const { theme } = useThemeContext();
+	return (
+		<ProgressStack.Navigator 
+			screenOptions={{
+				...options,
+				contentStyle: {
+				backgroundColor: theme.background,
+				},
+			}}
+		>
+			<ProgressStack.Screen name="Progress" component={ProgressScreen} options={{ title: 'Progreso' }} />
+		</ProgressStack.Navigator>
+	);
+}
+
+function SettingsStackNavigator() {
+	const options = useTabStackOptions();
+	const { theme } = useThemeContext();
+	return (
+		<SettingsStack.Navigator 
+			screenOptions={{
+				...options,
+				contentStyle: {
+				backgroundColor: theme.background,
+				},
+			}}
+		>
+			<SettingsStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Opciones' }} />
+		</SettingsStack.Navigator>
 	);
 }
 
@@ -99,18 +149,60 @@ export function AppNavigator() {
 				},
 			}}
 		>
-			<Stack.Navigator
+			<Tab.Navigator
 				screenOptions={{
-					headerStyle: { backgroundColor: theme.surface },
-					headerTintColor: theme.text,
+					headerShown: false,
+
+					sceneStyle: {
+						backgroundColor: theme.background,
+					},
+
+					tabBarStyle: {
+						backgroundColor: theme.surface,
+						borderTopWidth: 0,
+						shadowOpacity: 0,
+						shadowOffset: { width: 0, height: 0 },
+						shadowRadius: 0,
+						elevation: 0,
+					},
+
+					tabBarActiveTintColor: theme.primary,
+					tabBarInactiveTintColor: theme.textMuted,
 				}}
 			>
-				<Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
-				<Stack.Screen
-					name="Routine"
-					component={RoutineScreen}
+				<Tab.Screen
+					name="HomeStack"
+					component={HomeStackNavigator}
+					options={{
+						title: 'Rutinas',
+						tabBarIcon: ({ color, size }) => <RoutinesIcon color={color} size={size} />,
+					}}
 				/>
-			</Stack.Navigator>
+				<Tab.Screen
+					name="HistoryStack"
+					component={HistoryStackNavigator}
+					options={{
+						title: 'Historial',
+						tabBarIcon: ({ color, size }) => <HistoryIcon color={color} size={size} />,
+					}}
+				/>
+				<Tab.Screen
+					name="ProgressStack"
+					component={ProgressStackNavigator}
+					options={{
+						title: 'Progreso',
+						tabBarIcon: ({ color, size }) => <ProgressIcon color={color} size={size} />,
+					}}
+				/>
+				<Tab.Screen
+					name="SettingsStack"
+					component={SettingsStackNavigator}
+					options={{
+						title: 'Opciones',
+						tabBarIcon: ({ color, size }) => <SettingsIcon color={color} size={size} />,
+					}}
+				/>
+			</Tab.Navigator>
 		</NavigationContainer>
 	);
 }
