@@ -1,7 +1,7 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useLayoutEffect, useMemo, useState, useEffect, useRef } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, KeyboardAvoidingView, Modal, Platform } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import { Button } from '../components/Button';
 import { EditIcon } from '../components/EditIcon';
@@ -181,37 +181,59 @@ export function HomeScreen() {
 
 	return (
 		<View style={[styles.container, { backgroundColor: theme.background }]}>
-			{showAddModal ? (
-				<View style={styles.form}>
-					<Input
-						value={newRoutineName}
-						onChangeText={setNewRoutineName}
-						placeholder="Nueva rutina"
-						returnKeyType="done"
-						onSubmitEditing={async () => {
-							await addRoutine(newRoutineName);
-							setNewRoutineName('');
-							setShowAddModal(false);
-						}}
+			<Modal
+				visible={showAddModal}
+				animationType="slide"
+				transparent
+				onRequestClose={() => setShowAddModal(false)}
+			>
+				<KeyboardAvoidingView
+					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+					style={styles.modalOverlay}
+				>
+					<Pressable
+						style={styles.modalBackdrop}
+						onPress={() => setShowAddModal(false)}
 					/>
-					<Button
-						title="Crear"
-						onPress={async () => {
-							await addRoutine(newRoutineName);
-							setNewRoutineName('');
-							setShowAddModal(false);
-						}}
-					/>
-					<Button
-						title="Cancelar"
-						variant="ghost"
-						onPress={() => {
-							setNewRoutineName('');
-							setShowAddModal(false);
-						}}
-					/>
-				</View>
-			) : null}
+
+					<View
+						style={[
+							styles.modalContent,
+							{ backgroundColor: theme.surface }
+						]}
+					>
+						<Text style={[styles.modalTitle, { color: theme.text }]}>
+							Nueva Rutina
+						</Text>
+
+						<Input
+							value={newRoutineName}
+							onChangeText={setNewRoutineName}
+							placeholder="Nueva rutina"
+						/>
+
+						<View style={styles.modalActions}>
+							<Button
+								title="Cancelar"
+								variant="ghost"
+								onPress={() => {
+									setNewRoutineName('');
+									setShowAddModal(false);
+								}}
+							/>
+
+							<Button
+								title="Crear"
+								onPress={async () => {
+									await addRoutine(newRoutineName);
+									setNewRoutineName('');
+									setShowAddModal(false);
+								}}
+							/>
+						</View>
+					</View>
+				</KeyboardAvoidingView>
+			</Modal>
 
 			{renameRoutineId ? (
 				<View style={styles.form}>
@@ -292,5 +314,46 @@ const styles = StyleSheet.create({
 	},
 	emptyText: {
 		fontSize: 14,
+	},
+	modalOverlay: {
+		flex: 1,
+		justifyContent: 'flex-end',
+	},
+	modalBackdrop: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+	},
+	modalContent: {
+		borderTopLeftRadius: 20,
+		borderTopRightRadius: 20,
+		padding: 20,
+		gap: 16,
+		maxHeight: '80%',
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: '700',
+		marginBottom: 4,
+	},
+	modalLabel: {
+		fontSize: 12,
+		fontWeight: '600',
+		marginBottom: 4,
+	},
+	modalInput: {
+		marginBottom: 0,
+	},
+	modalRow: {
+		flexDirection: 'row',
+		gap: 12,
+	},
+	modalActions: {
+		flexDirection: 'row',
+		gap: 10,
+		marginTop: 8,
 	},
 });
