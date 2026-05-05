@@ -13,7 +13,7 @@ RoutineApp es una aplicación móvil desarrollada en TypeScript y Expo que te ay
 
 ### Requisitos
 
-- Node.js
+- [Node.js](https://nodejs.org/)
 - [Expo Go](https://expo.dev/client) en tu dispositivo móvil
 
 ### Pasos para empezar
