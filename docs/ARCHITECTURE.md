@@ -4,33 +4,33 @@ Este documento complementa al `README.md` (que cubre instalación y uso) y está
 
 ## 1. Vistazo visual
 
-| Rutinas (Home) | Detalle de rutina |
-|---|---|
-| ![Pantalla de rutinas](./screenshots/home.png) | ![Detalle de rutina con ejercicios](./screenshots/routine-detail.png) |
+| Rutinas (Home)                                 | Detalle de rutina                                                     |
+| ---------------------------------------------- | --------------------------------------------------------------------- |
+| ![Pantalla de rutinas](./screenshots/home.PNG) | ![Detalle de rutina con ejercicios](./screenshots/routine-detail.PNG) |
 
-| Historial | Progreso |
-|---|---|
-| ![Historial de cambios de peso](./screenshots/history.png) | ![Gráfico de progreso por ejercicio](./screenshots/progress-chart.png) |
+| Historial                                                  | Progreso                                                               |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------- |
+| ![Historial de cambios de peso](./screenshots/history.PNG) | ![Gráfico de progreso por ejercicio](./screenshots/progress-chart.PNG) |
 
 **Opciones (tema + backup):**
 
-![Pantalla de opciones con tema oscuro y import/export](./screenshots/settings.png)
+![Pantalla de opciones con tema oscuro y import/export](./screenshots/settings.PNG)
 
 ## 2. Stack tecnológico
 
-| Capa | Tecnología |
-|---|---|
-| Framework | React Native + Expo SDK 54 |
-| Lenguaje | TypeScript |
-| Navegación | React Navigation (bottom tabs + native stack anidados) |
-| Persistencia | SQLite on-device (`expo-sqlite`) |
-| Estado global | React Context API (sin Redux/Zustand) |
-| Preferencias simples | AsyncStorage (solo para el tema claro/oscuro) |
-| Gestos / drag & drop | `react-native-gesture-handler` + `react-native-draggable-flatlist` |
-| Animaciones | `react-native-reanimated` / `Animated` API nativa |
-| Gráficos | `react-native-chart-kit` |
-| Import/export de datos | `expo-file-system`, `expo-sharing`, `expo-document-picker` |
-| Build / distribución | EAS Build (perfiles `preview` y `production` en `eas.json`) |
+| Capa                   | Tecnología                                                         |
+| ---------------------- | ------------------------------------------------------------------ |
+| Framework              | React Native + Expo SDK 54                                         |
+| Lenguaje               | TypeScript                                                         |
+| Navegación             | React Navigation (bottom tabs + native stack anidados)             |
+| Persistencia           | SQLite on-device (`expo-sqlite`)                                   |
+| Estado global          | React Context API (sin Redux/Zustand)                              |
+| Preferencias simples   | AsyncStorage (solo para el tema claro/oscuro)                      |
+| Gestos / drag & drop   | `react-native-gesture-handler` + `react-native-draggable-flatlist` |
+| Animaciones            | `react-native-reanimated` / `Animated` API nativa                  |
+| Gráficos               | `react-native-chart-kit`                                           |
+| Import/export de datos | `expo-file-system`, `expo-sharing`, `expo-document-picker`         |
+| Build / distribución   | EAS Build (perfiles `preview` y `production` en `eas.json`)        |
 
 No hay backend propio: **toda la app funciona 100% local**, sin llamadas a red ni servidor. Los datos viven en un archivo SQLite dentro del dispositivo.
 
@@ -82,6 +82,7 @@ Relaciones: `routines 1—N exercises 1—N history`, ambas con `ON DELETE CASCA
 ## 5. Gestión de estado (`src/context`)
 
 ### `AppContext.tsx`
+
 Es el corazón de la app: expone rutinas, ejercicios, historial y progreso, junto con todas las funciones para mutarlos. Patrón usado en **todas** las mutaciones:
 
 1. Ejecutar la operación contra SQLite (capa `db/`).
@@ -94,6 +95,7 @@ El bootstrap inicial (`useEffect` sin dependencias) llama a `initDatabase()` →
 `importData` / `getExportData` implementan el backup completo: `importData` borra todas las tablas y reinserta todo dentro de una única transacción (`db.withTransactionAsync`), remapeando IDs viejos → nuevos para mantener las relaciones FK consistentes.
 
 ### `ThemeContext.tsx`
+
 Maneja únicamente `light`/`dark`. Persiste la preferencia en AsyncStorage bajo la key `routineapp.theme` y expone el objeto de tema (`theme/light.ts` / `theme/dark.ts`) para que cada componente arme sus estilos inline en base a los colores del tema activo (no se usa un sistema de theming como NativeWind/Styled Components).
 
 ## 6. Navegación (`src/navigation/AppNavigator.tsx`)
@@ -117,12 +119,12 @@ Los tipos de rutas (`RootStackParamList`, `HomeStackParamList`, etc.) están tod
 
 ## 7. Componentes clave
 
-| Componente | Responsabilidad |
-|---|---|
-| `RoutineCard` | Card de una rutina en Home, con modo edición (rename/delete) |
-| `ExerciseCard` | Card de un ejercicio dentro de una rutina: peso, sets, record, botones +/− y drag handle |
-| `Button`, `Input` | Primitivos de UI reutilizados en toda la app |
-| `*Icon.tsx` | Íconos SVG hechos a mano (no se usa una librería de íconos como `lucide` o `expo-vector-icons`) |
+| Componente        | Responsabilidad                                                                                 |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `RoutineCard`     | Card de una rutina en Home, con modo edición (rename/delete)                                    |
+| `ExerciseCard`    | Card de un ejercicio dentro de una rutina: peso, sets, record, botones +/− y drag handle        |
+| `Button`, `Input` | Primitivos de UI reutilizados en toda la app                                                    |
+| `*Icon.tsx`       | Íconos SVG hechos a mano (no se usa una librería de íconos como `lucide` o `expo-vector-icons`) |
 
 El drag & drop (`react-native-draggable-flatlist`) se usa tanto en Home (reordenar rutinas) como en Routine (reordenar ejercicios), y en ambos casos dispara `moveRoutines`/`moveExercises` del context al soltar.
 
