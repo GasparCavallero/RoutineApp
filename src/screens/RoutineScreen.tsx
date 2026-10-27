@@ -1,4 +1,4 @@
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from 'expo-router/react-navigation';
 import { useCallback, useLayoutEffect, useMemo, useState, useRef } from 'react';
 import { Alert, Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist'; 
@@ -8,10 +8,11 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { Input } from '../components/Input';
 import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
-import { HomeStackParamList } from '../navigation/AppNavigator';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../navigation/types';
+import type { NativeStackNavigationProp } from 'expo-router';
 import type { ExerciseRow } from '../db/exercises';
-import { useHeaderHeight } from '@react-navigation/elements';
+import { useHeaderHeight } from 'expo-router/react-navigation';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 type RoutineRoute = RouteProp<HomeStackParamList, 'Routine'>;
@@ -36,6 +37,7 @@ export function RoutineScreen() {
 	});
 
 	const headerHeight = useHeaderHeight();
+	const insets = useSafeAreaInsets();
 
 	const [editMode, setEditMode] = useState(false);
 	const [showAddModal, setShowAddModal] = useState(false);
@@ -325,6 +327,7 @@ const handleEditWeight = async () => {
 						styles.list,
 						{
 							paddingTop: headerHeight + 14, // Ajusta el padding top para no quedar debajo del header
+							paddingBottom: insets.bottom + 24,
 						}
 					]}
 					scrollEventThrottle={16}

@@ -73,20 +73,12 @@ export function ExerciseCard(props: ExerciseCardProps) {
         <Text style={[styles.name, { color: theme.text }]}>{name}</Text>
         {editMode ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Pressable
+            <Button
+              title=""
               onPress={onDelete}
-              style={{
-                backgroundColor: '#c62828',
-                borderRadius: 6,
-                padding: 4,
-                marginRight: 4,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              hitSlop={8}
-            >
-              <TrashIcon color="#fff" size={20} />
-            </Pressable>
+              variant="danger"
+              icon={<TrashIcon color="#fff" size={16} />}
+            />
             <DragIcon color={theme.textMuted} size={20} />
           </View>
         ) : null}
@@ -246,12 +238,6 @@ export function ExerciseCard(props: ExerciseCardProps) {
           <Button title="Renombrar" onPress={() => setShowRenameModal(true)} variant="ghost" />
           {onEditWeight && <Button title="Editar peso" onPress={onEditWeight} variant="ghost" />}
           <Button title="Editar series/reps" onPress={() => setEditingSets(true)} variant="ghost" />
-          <Button 
-            title="" 
-            onPress={onDelete} 
-            variant="danger" 
-            icon={<TrashIcon color="#fff" size={16} />} 
-          />
         </View>
       ) : null}
     </Pressable>
@@ -287,7 +273,9 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+    alignItems: 'center',
   },
   input: {
     borderWidth: 1,

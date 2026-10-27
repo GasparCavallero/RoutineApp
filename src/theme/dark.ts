@@ -1,7 +1,7 @@
 import { AppTheme } from './light';
 
 export const darkTheme: AppTheme = {
-	background: '#020617',
+	background: '#050505',
 	surface: '#0F172A',
 	text: '#F8FAFC',
 	textMuted: '#94A3B8',

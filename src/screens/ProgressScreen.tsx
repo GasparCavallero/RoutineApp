@@ -1,12 +1,12 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from 'expo-router/react-navigation';
 import { useCallback, useMemo, useState, useLayoutEffect, useRef } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, View, Animated } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, View, Animated } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Button } from '../components/Button';
 import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
 import { formatDate, toKg } from '../utils/helpers';
-import { useHeaderHeight } from '@react-navigation/elements';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 
 const chartWidth = Math.max(Dimensions.get('window').width - 28, 260);
 
@@ -82,6 +82,7 @@ export function ProgressScreen() {
 
 	return (
 		<Animated.ScrollView 
+			contentInsetAdjustmentBehavior="automatic"
 			scrollEventThrottle={16}
 			onScroll={Animated.event(
 				[{ nativeEvent: { contentOffset: { y: scrollY } } }], 
@@ -90,8 +91,8 @@ export function ProgressScreen() {
 			style={[styles.container, { backgroundColor: theme.background }]} 
 			contentContainerStyle={[
 				styles.content, 
-				{ 
-					paddingTop: headerHeight + 14 
+				{
+					paddingTop: Platform.OS === 'ios' ? 0 : headerHeight
 				}
 			]}>
 			<Text style={[styles.title, { color: theme.text }]}>Seleccioná un ejercicio</Text>

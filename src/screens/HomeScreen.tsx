@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect, useNavigation } from 'expo-router/react-navigation';
+import type { NativeStackNavigationProp } from 'expo-router';
 import { useCallback, useLayoutEffect, useMemo, useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, KeyboardAvoidingView, Modal, Platform, Dimensions } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
@@ -9,8 +9,9 @@ import { Input } from '../components/Input';
 import { RoutineCard } from '../components/RoutineCard';
 import { useAppContext } from '../context/AppContext';
 import { useThemeContext } from '../context/ThemeContext';
-import { HomeStackParamList } from '../navigation/AppNavigator';
-import { useHeaderHeight } from '@react-navigation/elements';
+import { HomeStackParamList } from '../navigation/types';
+import { useHeaderHeight } from 'expo-router/react-navigation';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 type Navigation = NativeStackNavigationProp<HomeStackParamList, 'Home'>;
@@ -89,6 +90,7 @@ export function HomeScreen() {
 	});
 
 	const headerHeight = useHeaderHeight();
+	const insets = useSafeAreaInsets();
 
 	useFocusEffect(
 		useCallback(() => {
@@ -273,8 +275,9 @@ export function HomeScreen() {
 						styles.list,
 						{
 							paddingTop: headerHeight + 14, // Ajusta el padding top para no quedar debajo del header
+							paddingBottom: insets.bottom + 24,
 							flexGrow: 1,
-							minHeight: Dimensions.get('window').height - headerHeight,
+							minHeight: Dimensions.get('window').height - headerHeight + insets.bottom + 24,
 						}
 					]}
 					scrollEventThrottle={16}

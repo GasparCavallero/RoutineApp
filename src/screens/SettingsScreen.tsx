@@ -1,7 +1,7 @@
-import { Alert, StyleSheet, Text, View, Animated, ScrollView } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View, Animated } from 'react-native';
 import { useRef, useState, useLayoutEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { useHeaderHeight } from '@react-navigation/elements';
+import { useNavigation } from 'expo-router/react-navigation';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
@@ -150,13 +150,14 @@ export function SettingsScreen() {
 
 	return (
 		<Animated.ScrollView
+			contentInsetAdjustmentBehavior="automatic"
 			scrollEventThrottle={16}
 			onScroll={Animated.event(
 				[{ nativeEvent: { contentOffset: { y: scrollY } } }],
 				{ useNativeDriver: false }
 			)}
-			style={[styles.container, { backgroundColor: "transparent" }]}
-			contentContainerStyle={{ paddingTop: headerHeight + 14 }}
+			style={[styles.container, { backgroundColor: 'transparent' }]}
+			contentContainerStyle={{ paddingTop: Platform.OS === 'ios' ? 0 : headerHeight, paddingHorizontal: 14, paddingBottom: 14 }}
 		>
 			<View style={[styles.section, { borderColor: theme.border }]}>
 				<View style={styles.themeHeader}>
@@ -194,7 +195,6 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 14,
 	},
 	section: {
 		marginBottom: 20,

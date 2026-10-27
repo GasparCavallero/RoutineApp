@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import { Appearance } from 'react-native';
 import { darkTheme } from '../theme/dark';
 import { AppTheme, lightTheme } from '../theme/light';
 
@@ -17,6 +18,10 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: PropsWithChildren) {
 	const [mode, setMode] = useState<ThemeMode>('light');
+
+	useEffect(() => {
+		Appearance.setColorScheme(mode);
+	}, [mode]);
 
 	useEffect(() => {
 		const load = async () => {
