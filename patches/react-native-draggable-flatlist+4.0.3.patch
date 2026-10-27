@@ -1,0 +1,335 @@
+diff --git a/node_modules/react-native-draggable-flatlist/src/components/CellDecorators.tsx b/node_modules/react-native-draggable-flatlist/src/components/CellDecorators.tsx
+index e441fdc..b7cc0a0 100644
+--- a/node_modules/react-native-draggable-flatlist/src/components/CellDecorators.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/components/CellDecorators.tsx
+@@ -25,7 +25,7 @@ export const ScaleDecorator = ({ activeScale = 1.1, children }: ScaleProps) => {
+     return {
+       transform: [{ scaleX: scale }, { scaleY: scale }],
+     };
+-  }, [isActive]);
++  });
+ 
+   return (
+     <Animated.View style={[style, horizontal && styles.horizontal]}>
+@@ -60,7 +60,7 @@ export const ShadowDecorator = ({
+       shadowColor: isActive ? color : "transparent",
+       shadowOpacity: isActive ? shadowOpacity : 0,
+     };
+-  }, [isActive, onActiveAnim]);
++  });
+ 
+   return (
+     <Animated.View style={[style, horizontal && styles.horizontal]}>
+@@ -85,7 +85,7 @@ export const OpacityDecorator = ({
+     return {
+       opacity: isActive ? opacity : 1,
+     };
+-  }, [isActive]);
++  });
+ 
+   return (
+     <Animated.View style={[style, horizontal && styles.horizontal]}>
+diff --git a/node_modules/react-native-draggable-flatlist/src/components/CellRendererComponent.tsx b/node_modules/react-native-draggable-flatlist/src/components/CellRendererComponent.tsx
+index e4e861a..172d250 100644
+--- a/node_modules/react-native-draggable-flatlist/src/components/CellRendererComponent.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/components/CellRendererComponent.tsx
+@@ -67,7 +67,7 @@ function CellRendererComponent<T>(props: Props<T>) {
+     return {
+       transform: [horizontalAnim.value ? { translateX: t } : { translateY: t }],
+     };
+-  }, [translate, activeKey]);
++  });
+ 
+   const updateCellMeasurements = useStableCallback(() => {
+     const onSuccess: MeasureLayoutOnSuccessCallback = (x, y, w, h) => {
+diff --git a/node_modules/react-native-draggable-flatlist/src/components/DraggableFlatList.tsx b/node_modules/react-native-draggable-flatlist/src/components/DraggableFlatList.tsx
+index 7c88afc..fc83883 100644
+--- a/node_modules/react-native-draggable-flatlist/src/components/DraggableFlatList.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/components/DraggableFlatList.tsx
+@@ -255,7 +255,6 @@ function DraggableFlatListInner<T>(props: DraggableFlatListProps<T>) {
+         }
+       }
+     },
+-    [isTouchActiveNative, onDragEnd, onRelease]
+   );
+ 
+   useAnimatedReaction(
+@@ -267,7 +266,6 @@ function DraggableFlatListInner<T>(props: DraggableFlatListProps<T>) {
+         runOnJS(onPlaceholderIndexChange)(cur);
+       }
+     },
+-    [spacerIndexAnim]
+   );
+ 
+   const gestureDisabled = useSharedValue(false);
+@@ -346,7 +344,6 @@ function DraggableFlatListInner<T>(props: DraggableFlatListProps<T>) {
+         runOnJS(onScroll)(scrollOffset.value);
+       },
+     },
+-    [horizontalAnim]
+   );
+ 
+   useAutoScroll();
+diff --git a/node_modules/react-native-draggable-flatlist/src/components/NestableDraggableFlatList.tsx b/node_modules/react-native-draggable-flatlist/src/components/NestableDraggableFlatList.tsx
+index 1559352..e95ee17 100644
+--- a/node_modules/react-native-draggable-flatlist/src/components/NestableDraggableFlatList.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/components/NestableDraggableFlatList.tsx
+@@ -40,7 +40,7 @@ function NestableDraggableFlatListInner<T>(
+ 
+   const hoverOffset = useDerivedValue(() => {
+     return listHoverOffset.value + listVerticalOffset.value;
+-  }, [listHoverOffset]);
++  });
+ 
+   useNestedAutoScroll({
+     ...animVals,
+diff --git a/node_modules/react-native-draggable-flatlist/src/components/PlaceholderItem.tsx b/node_modules/react-native-draggable-flatlist/src/components/PlaceholderItem.tsx
+index 5e6319f..ebcf5ae 100644
+--- a/node_modules/react-native-draggable-flatlist/src/components/PlaceholderItem.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/components/PlaceholderItem.tsx
+@@ -57,7 +57,7 @@ function PlaceholderItem<T>({ renderPlaceholder }: Props<T>) {
+         ],
+       };
+ 
+-  }, [spacerIndexAnim, placeholderOffset, horizontalAnim, scrollOffset, size]);
++  });
+ 
+   const extraStyle = useMemo(() => {
+     return horizontal ? { width: size } : { height: size };
+diff --git a/node_modules/react-native-draggable-flatlist/src/components/ScrollOffsetListener.tsx b/node_modules/react-native-draggable-flatlist/src/components/ScrollOffsetListener.tsx
+index 50c689b..95c7989 100644
+--- a/node_modules/react-native-draggable-flatlist/src/components/ScrollOffsetListener.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/components/ScrollOffsetListener.tsx
+@@ -17,7 +17,7 @@ const ScrollOffsetListener = ({
+     if (cur !== prev) {
+       runOnJS(onScrollOffsetChange)(cur)
+     }
+-  }, [scrollOffset])
++  })
+ 
+   return null;
+ };
+diff --git a/node_modules/react-native-draggable-flatlist/src/context/animatedValueContext.tsx b/node_modules/react-native-draggable-flatlist/src/context/animatedValueContext.tsx
+index c62360d..66afb30 100644
+--- a/node_modules/react-native-draggable-flatlist/src/context/animatedValueContext.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/context/animatedValueContext.tsx
+@@ -80,14 +80,13 @@ function useSetupAnimatedValues<T>() {
+         outerScrollInit.value = outerScrollOffset.value;
+       }
+     },
+-    [outerScrollOffset]
+   );
+ 
+   const placeholderOffset = useSharedValue(0);
+ 
+   const isDraggingCell = useDerivedValue(() => {
+     return isTouchActiveNative.value && activeIndexAnim.value >= 0;
+-  }, []);
++  });
+ 
+   const autoScrollDistance = useDerivedValue(() => {
+     if (!isDraggingCell.value) return 0;
+@@ -96,14 +95,14 @@ function useSetupAnimatedValues<T>() {
+     const outerScrollDiff = outerScrollOffset.value - outerScrollInit.value;
+     const scrollDiff = innerScrollDiff + outerScrollDiff;
+     return scrollDiff;
+-  }, []);
++  });
+ 
+   const touchPositionDiff = useDerivedValue(() => {
+     const extraTranslate = isTouchActiveNative.value
+       ? autoScrollDistance.value
+       : 0;
+     return touchTranslate.value + extraTranslate;
+-  }, []);
++  });
+ 
+   const touchPositionDiffConstrained = useDerivedValue(() => {
+     const containerMinusActiveCell =
+@@ -131,7 +130,7 @@ function useSetupAnimatedValues<T>() {
+       Math.max(constrainedBase, maxTranslateNegative),
+       maxTranslatePositive
+     );
+-  }, []);
++  });
+ 
+   const dragItemOverflow = props.dragItemOverflow;
+   const hoverAnim = useDerivedValue(() => {
+@@ -139,11 +138,11 @@ function useSetupAnimatedValues<T>() {
+     return dragItemOverflow
+       ? touchPositionDiff.value
+       : touchPositionDiffConstrained.value;
+-  }, []);
++  });
+ 
+   const hoverOffset = useDerivedValue(() => {
+     return hoverAnim.value + activeCellOffset.value;
+-  }, [hoverAnim, activeCellOffset]);
++  });
+ 
+   useDerivedValue(() => {
+     // Reset spacer index when we stop hovering
+@@ -151,7 +150,7 @@ function useSetupAnimatedValues<T>() {
+     if (!isHovering && spacerIndexAnim.value >= 0) {
+       spacerIndexAnim.value = -1;
+     }
+-  }, []);
++  });
+ 
+   // Note: this could use a refactor as it combines touch state + cell animation
+   const resetTouchedCell = useCallback(() => {
+diff --git a/node_modules/react-native-draggable-flatlist/src/hooks/useAutoScroll.tsx b/node_modules/react-native-draggable-flatlist/src/hooks/useAutoScroll.tsx
+index d3add83..c552018 100644
+--- a/node_modules/react-native-draggable-flatlist/src/hooks/useAutoScroll.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/hooks/useAutoScroll.tsx
+@@ -28,27 +28,27 @@ export function useAutoScroll() {
+ 
+   const hoverScreenOffset = useDerivedValue(() => {
+     return hoverOffset.value - scrollOffset.value;
+-  }, []);
++  });
+ 
+   const isScrolledUp = useDerivedValue(() => {
+     return scrollOffset.value - SCROLL_POSITION_TOLERANCE <= 0;
+-  }, []);
++  });
+ 
+   const isScrolledDown = useDerivedValue(() => {
+     return (
+       scrollOffset.value + containerSize.value + SCROLL_POSITION_TOLERANCE >=
+       scrollViewSize.value
+     );
+-  }, []);
++  });
+ 
+   const distToTopEdge = useDerivedValue(() => {
+     return Math.max(0, hoverScreenOffset.value);
+-  }, []);
++  });
+ 
+   const distToBottomEdge = useDerivedValue(() => {
+     const hoverPlusActiveCell = hoverScreenOffset.value + activeCellSize.value;
+     return Math.max(0, containerSize.value - hoverPlusActiveCell);
+-  }, []);
++  });
+ 
+   const isAtTopEdge = useDerivedValue(() => {
+     return distToTopEdge.value <= autoscrollThreshold;
+@@ -56,12 +56,12 @@ export function useAutoScroll() {
+ 
+   const isAtBottomEdge = useDerivedValue(() => {
+     return distToBottomEdge.value <= autoscrollThreshold;
+-  }, []);
++  });
+ 
+   const scrollTarget = useSharedValue(0);
+   const dragIsActive = useDerivedValue(() => {
+     return activeIndexAnim.value >= 0;
+-  }, []);
++  });
+ 
+   useAnimatedReaction(
+     () => {
+@@ -86,7 +86,7 @@ export function useAutoScroll() {
+     const cellIsActive = activeIndexAnim.value >= 0;
+ 
+     return hasScrolledToTarget && isAtEdge && !isEdgeDisabled && cellIsActive;
+-  }, []);
++  });
+ 
+   function scrollToInternal(offset: number) {
+     if (flatlistRef && "current" in flatlistRef) {
+@@ -113,7 +113,7 @@ export function useAutoScroll() {
+     // Reanimated scrollTo is crashing on android. use 'regular' scrollTo until figured out.
+     // scrollTo(scrollViewRef, targetX, targetY, true);
+     runOnJS(scrollToInternal)(targetOffset);
+-  }, []);
++  });
+ 
+   return null;
+ }
+diff --git a/node_modules/react-native-draggable-flatlist/src/hooks/useCellTranslate.tsx b/node_modules/react-native-draggable-flatlist/src/hooks/useCellTranslate.tsx
+index efea240..480613c 100644
+--- a/node_modules/react-native-draggable-flatlist/src/hooks/useCellTranslate.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/hooks/useCellTranslate.tsx
+@@ -102,7 +102,7 @@ export function useCellTranslate({ cellIndex, cellSize, cellOffset }: Params) {
+       : 0;
+ 
+     return withSpring(translationAmt, animationConfigRef.value);
+-  }, [activeKey, cellIndex]);
++  });
+ 
+   return translate;
+ }
+diff --git a/node_modules/react-native-draggable-flatlist/src/hooks/useNestedAutoScroll.tsx b/node_modules/react-native-draggable-flatlist/src/hooks/useNestedAutoScroll.tsx
+index ee098ec..46b07e8 100644
+--- a/node_modules/react-native-draggable-flatlist/src/hooks/useNestedAutoScroll.tsx
++++ b/node_modules/react-native-draggable-flatlist/src/hooks/useNestedAutoScroll.tsx
+@@ -44,31 +44,31 @@ export function useNestedAutoScroll(params: {
+ 
+   const hoverScreenOffset = useDerivedValue(() => {
+     return hoverOffset.value - outerScrollOffset.value;
+-  }, []);
++  });
+ 
+   const isScrolledUp = useDerivedValue(() => {
+     return outerScrollOffset.value - SCROLL_POSITION_TOLERANCE <= 0;
+-  }, []);
++  });
+ 
+   const isScrolledDown = useDerivedValue(() => {
+     return (
+       outerScrollOffset.value + containerSize.value + SCROLL_POSITION_TOLERANCE >=
+       scrollViewSize.value
+     );
+-  }, []);
++  });
+ 
+   const distToTopEdge = useDerivedValue(() => {
+     return Math.max(0, hoverScreenOffset.value);
+-  }, [hoverScreenOffset]);
++  });
+ 
+   const distToBottomEdge = useDerivedValue(() => {
+     const dist = containerSize.value - (hoverScreenOffset.value + activeCellSize.value)
+     return Math.max(0, dist);
+-  }, [hoverScreenOffset, activeCellSize, containerSize]);
++  });
+ 
+   const isAtTopEdge = useDerivedValue(() => {
+     return distToTopEdge.value <= autoscrollThreshold;
+-  }, []);
++  });
+ 
+   const isAtBottomEdge = useDerivedValue(() => {
+     return distToBottomEdge.value <= autoscrollThreshold;
+@@ -85,7 +85,6 @@ export function useNestedAutoScroll(params: {
+         scrollTarget.value = outerScrollOffset.value;
+       }
+     },
+-    [activeCellSize]
+   );
+ 
+   function scrollToInternal(y: number) {
+@@ -122,7 +121,7 @@ export function useNestedAutoScroll(params: {
+       // scrollTo(scrollViewRef, 0, scrollTarget.value, true)
+       runOnJS(scrollToInternal)(targetOffset);
+     }
+-  }, [autoscrollSpeed, autoscrollThreshold, isDraggingCell]);
++  });
+ 
+   return null;
+ }
+diff --git a/node_modules/react-native-draggable-flatlist/src/hooks/useOnCellActiveAnimation.ts b/node_modules/react-native-draggable-flatlist/src/hooks/useOnCellActiveAnimation.ts
+index e4cb304..fc175a4 100644
+--- a/node_modules/react-native-draggable-flatlist/src/hooks/useOnCellActiveAnimation.ts
++++ b/node_modules/react-native-draggable-flatlist/src/hooks/useOnCellActiveAnimation.ts
+@@ -32,7 +32,7 @@ export function useOnCellActiveAnimation(
+       ...DEFAULT_ANIMATION_CONFIG,
+       ...animationConfigRef.value,
+     } as WithSpringConfig);
+-  }, [isActive]);
++  });
+ 
+   return {
+     isActive,

@@ -1,6 +1,6 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState, useLayoutEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Animated, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Animated, FlatList } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { Input } from '../components/Input';
 import { useAppContext } from '../context/AppContext';
@@ -22,7 +22,7 @@ export function HistoryScreen() {
 
 	const headerOpacity = scrollY.interpolate({
 		inputRange: [0, SCROLL_THRESHOLD],
-		outputRange: [0, 1],
+		outputRange: ['transparent', theme.surface],
 		extrapolate: 'clamp',
 	});
 
@@ -39,7 +39,7 @@ export function HistoryScreen() {
 				/>
 			),
 		});
-	}, [navigation, headerOpacity]);
+	}, [navigation, headerOpacity, theme.surface]);
 
 	useFocusEffect(
 		useCallback(() => {
@@ -73,72 +73,41 @@ export function HistoryScreen() {
 				}
 			]}
 		>
-			<Animated.ScrollView
+			<Animated.FlatList
+				data={filteredHistory}
+				keyExtractor={(item) => String(item.id)}
+				renderItem={({ item }) => (
+					<View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+						<Text style={[styles.title, { color: theme.text }]}>{item.exercise_name}</Text>
+						<Text style={[styles.subtitle, { color: theme.textMuted }]}>{item.routine_name}</Text>
+						<Text style={[styles.value, { color: theme.text }]}>
+							{toKg(item.weight)} · {item.sets}
+						</Text>
+						<Text style={[styles.date, { color: theme.textMuted }]}>{formatDateTime(item.date)}</Text>
+					</View>
+				)}
+				ListHeaderComponent={
+					<View style={styles.filters}>
+						<Input
+							value={routineFilter}
+							onChangeText={setRoutineFilter}
+							placeholder="Filtrar por rutina"
+						/>
+						<Input
+							value={exerciseFilter}
+							onChangeText={setExerciseFilter}
+							placeholder="Filtrar por ejercicio"
+						/>
+					</View>
+				}
+				ListEmptyComponent={<Text style={[styles.empty, { color: theme.textMuted }]}>Sin registros aún.</Text>}
 				scrollEventThrottle={16}
 				onScroll={Animated.event(
 					[{ nativeEvent: { contentOffset: { y: scrollY } } }],
 					{ useNativeDriver: false }
 				)}
-				contentContainerStyle={[
-					styles.list,
-					{
-						paddingTop: headerHeight + 14,
-					},
-				]}
-			>
-				<View 
-					style={[
-						styles.filters,
-					]}
-				>
-					<Input
-						value={routineFilter}
-						onChangeText={setRoutineFilter}
-						placeholder="Filtrar por rutina"
-					/>
-
-					<Input
-						value={exerciseFilter}
-						onChangeText={setExerciseFilter}
-						placeholder="Filtrar por ejercicio"
-					/>
-				</View>
-
-				{filteredHistory.length === 0 ? (
-					<Text style={[styles.empty, { color: theme.textMuted }]}>
-						Sin registros aún.
-					</Text>
-				) : (
-					filteredHistory.map((item) => (
-						<View
-							key={item.id}
-							style={[
-								styles.card,
-								{
-									backgroundColor: theme.surface,
-									borderColor: theme.border,
-								},
-							]}
-						>
-							<Text style={[styles.title, { color: theme.text }]}>
-								{item.exercise_name}
-							</Text>
-
-							<Text style={[styles.subtitle, { color: theme.textMuted }]}>
-								{item.routine_name}
-							</Text>
-
-							<Text style={[styles.value, { color: theme.text }]}>
-								{toKg(item.weight)} · {item.sets}
-							</Text>
-
-							<Text style={[styles.date, { color: theme.textMuted }]}>
-								{formatDateTime(item.date)}
-							</Text>
-						</View>
-					))
-				)}
-			</Animated.ScrollView>
+				contentContainerStyle={[styles.list, { paddingTop: headerHeight + 14 }]}
+			/>
 		</View>
 	);
 }

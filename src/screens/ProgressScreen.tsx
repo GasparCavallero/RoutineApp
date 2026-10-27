@@ -26,7 +26,7 @@ export function ProgressScreen() {
 
 	const headerOpacity = scrollY.interpolate({
 		inputRange: [0, SCROLL_THRESHOLD],
-		outputRange: [0, 1],
+		outputRange: ['transparent', theme.surface],
 		extrapolate: 'clamp',
 	});
 

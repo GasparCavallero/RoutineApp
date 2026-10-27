@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
 	adjustExerciseWeight,
 	createExercise,
@@ -74,19 +74,19 @@ export function AppProvider({ children }: PropsWithChildren) {
 		setExercises(data);
 	};
 
-	const loadHistory = async () => {
+	const loadHistory = useCallback(async () => {
 		const data = await getHistory();
 		setHistory(data);
-	};
+	}, []);
 
-	const loadProgress = async (exerciseId: number) => {
+	const loadProgress = useCallback(async (exerciseId: number) => {
 		const data = await getProgressByExercise(exerciseId);
 		setProgress(data);
-	};
+	}, []);
 
-	const loadAllExercises = async () => {
+	const loadAllExercises = useCallback(async () => {
 		return getAllExercises();
-	};
+	}, []);
 
 	const importData = async (payload: ImportDataPayload) => {
 		const db = await getDb();
